@@ -4,9 +4,17 @@ node_modules
 
 /src/generated/prisma
 
-images
-test-data
-tests
-reports
+images/
+public/
+test-data/
 
 jest.config.ts
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+e2e

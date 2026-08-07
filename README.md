@@ -30,3 +30,17 @@ El siguiente comando genera el cliente Prisma, se usa cada vez que se actualice 
 ```bash
 npx prisma generate
 ```
+
+## Herramientas de desarrollo para automatizar suites de pruebas
+
+Para crear el archivo jest.config.js
+
+```bash
+npx ts-jest config:init
+```
+
+Inicia y configura un proyecto de pruebas automatizadas End-to-End(E2E) con Playwright desde cero en el directorio actual
+
+```bash
+npm init playwright@latest
+```

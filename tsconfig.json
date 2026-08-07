@@ -10,7 +10,7 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "target": "es2023",
-    "types": ["node"],
+    "types": ["node", "jest"],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -37,12 +37,12 @@
     "strict": true,
     // "jsx": "react-jsx",
     // "verbatimModuleSyntax": true,
-    // "isolatedModules": true,
+    "isolatedModules": true,
     // "noUncheckedSideEffectImports": true,
     // "moduleDetection": "force",
     "skipLibCheck": true,
     "esModuleInterop": true
   },
-  "include": ["src/**/*", "prisma.config.ts"],
+  "include": ["src/**/*", "prisma.config.ts", "tests"],
   "exclude": ["node_modules"]
 }
