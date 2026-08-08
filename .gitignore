@@ -8,8 +8,6 @@ images/
 public/
 test-data/
 
-jest.config.ts
-
 # Playwright
 /test-results/
 /playwright-report/
