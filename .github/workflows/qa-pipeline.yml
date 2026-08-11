@@ -1,27 +1,83 @@
-name: CI - API Tests
+name: QA Pipeline
 
 on:
   push:
     branches:
       - main
-      - develop
 
   pull_request:
     branches:
       - main
-      - develop
-
 
 jobs:
 
-  test:
+  # ============================================================
+  # JOB 1 - UNIT TESTS
+  # ============================================================
+
+  unit-tests:
+
+    name: Unit Tests
 
     runs-on: ubuntu-latest
 
+    steps:
 
-    # ==========================================
-    # MySQL Service
-    # ==========================================
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+
+      - name: Install dependencies
+        run: npm ci
+
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+
+      - name: Run unit tests with coverage
+        run: >
+          npm test --
+          --coverage
+          --runInBand
+          --coverageThreshold='{
+            "global": {
+              "branches": 70,
+              "functions": 70,
+              "lines": 70,
+              "statements": 70
+            }
+          }'
+
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: coverage/
+          retention-days: 7
+
+
+  # ============================================================
+  # JOB 2 - E2E TESTS
+  # ============================================================
+
+  e2e-tests:
+
+    name: E2E Tests
+
+    runs-on: ubuntu-latest
+
+    needs:
+      - unit-tests
 
     services:
 
@@ -44,10 +100,6 @@ jobs:
           --health-retries=10
 
 
-    # ==========================================
-    # Environment Variables
-    # ==========================================
-
     env:
 
       HOST: localhost
@@ -63,18 +115,9 @@ jobs:
 
     steps:
 
-
-      # ========================================
-      # 1. Checkout
-      # ========================================
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
-
-      # ========================================
-      # 2. Node.js
-      # ========================================
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -83,57 +126,25 @@ jobs:
           cache: npm
 
 
-      # ========================================
-      # 3. Dependencies
-      # ========================================
-
       - name: Install dependencies
         run: npm ci
 
-
-      # ========================================
-      # 4. Prisma Client
-      # ========================================
 
       - name: Generate Prisma Client
         run: npx prisma generate
 
 
-      # ========================================
-      # 5. Database migrations
-      # ========================================
-
       - name: Deploy Prisma migrations
         run: npx prisma migrate deploy
 
-
-      # ========================================
-      # 6. Build
-      # ========================================
 
       - name: Build application
         run: npm run build
 
 
-      # ========================================
-      # 7. Unit Tests
-      # ========================================
-
-      - name: Run unit tests
-        run: npm test -- --runInBand
-
-
-      # ========================================
-      # 8. Install Playwright
-      # ========================================
-
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-
-      # ========================================
-      # 9. Start API
-      # ========================================
 
       - name: Start API server
         run: |
@@ -142,15 +153,12 @@ jobs:
           echo $! > api.pid
 
 
-      # ========================================
-      # 10. Wait for API
-      # ========================================
-
       - name: Wait for API
         run: |
           echo "Waiting for API..."
 
           for i in {1..30}; do
+
             if curl -f http://localhost:3050/; then
               echo "API is ready"
               exit 0
@@ -158,39 +166,80 @@ jobs:
 
             echo "Waiting..."
             sleep 2
+
           done
 
           echo "API did not start"
+
           cat reports/api.log
+
           exit 1
 
-
-      # ========================================
-      # 11. Playwright E2E
-      # ========================================
 
       - name: Run Playwright E2E tests
         run: npx playwright test
 
 
-      # ========================================
-      # 12. Cucumber BDD
-      # ========================================
-
       - name: Run Cucumber BDD tests
         run: npm run bdd
 
 
-      # ========================================
-      # 13. Upload Reports
-      # ========================================
+      - name: Generate Allure report
+        if: always()
+        run: |
+          if [ -d "reports/allure-results" ]; then
+            npx allure generate reports/allure-results \
+              --clean \
+              -o reports/allure-report
+          fi
 
-      - name: Upload test reports
+
+      - name: Upload E2E and Allure reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports
+          name: e2e-test-reports
           path: |
             reports/
-            test-results/
-          retention-days: 7u-latest
+          retention-days: 7
+
+
+      - name: Upload Playwright failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure-screenshots
+          path: |
+            reports/test-results/
+          retention-days: 7
+
+
+  # ============================================================
+  # JOB 3 - SECURITY SCAN
+  # ============================================================
+
+  security-scan:
+
+    name: Security Scan
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+
+      - name: Install dependencies
+        run: npm ci
+
+
+      - name: Run npm security audit
+        run: npm audit --audit-level=high
