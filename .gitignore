@@ -1,12 +1,17 @@
 node_modules
+dist/
 # Keep environment variables out of version control
 .env
+.env.*
+!.env.example
+
+reports/
+coverage/
 
 /src/generated/prisma
 
 images/
 public/
-test-data/
 
 # Playwright
 /test-results/
@@ -15,4 +20,4 @@ test-data/
 /playwright/.cache/
 /playwright/.auth/
 
-e2e
+.DS_Store

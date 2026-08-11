@@ -4,9 +4,13 @@ import { defineConfig, devices } from '@playwright/test';
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.resolve(__dirname, '.env') });
+
+/** Agregado para CI/CD Pipelines */
+const HOST = process.env.HOST || "localhost";
+const PORT = process.env.PORT || "3050";
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -25,6 +29,7 @@ export default defineConfig({
   reporter: [
     ["list"],
     ["html", { outputFolder: "reports/playwright" }],
+    ["allure-playwright", { resultsDir: "reports/allure-results", }],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -33,7 +38,8 @@ export default defineConfig({
      * Verificar las variables HOST y PORT
      * en las variables de entorno .env
      */
-    baseURL: 'http://192.168.1.8:3050',
+    // baseURL: `http://${process.env.HOST}:${process.env.PORT}`,
+    baseURL: `http://${HOST}:${PORT}`,
     headless: true,
 
     screenshot: "only-on-failure",
@@ -42,23 +48,25 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
 
+  outputDir: "reports/test-results",        
+
   /* Configure projects for major browsers */
   projects: [
     /**
      * No es necesario esta configuración
      * ya que no se esta haciendo E2E de interfaz, sino un E2E/API test
      */
-    /*{
+    {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-    },*/
+    },
 
-    {
+    /*{
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
 
-    /*{
+    {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
     },*/
@@ -90,4 +98,10 @@ export default defineConfig({
   //   url: 'http://localhost:3000',
   //   reuseExistingServer: !process.env.CI,
   // },
+
+  webServer: {
+    command: 'npm run start',
+    url: `http://localhost:${PORT}/`,
+    reuseExistingServer: true,
+  },
 });

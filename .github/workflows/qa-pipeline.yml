@@ -1,11 +1,196 @@
-name: Pipeline
+name: CI - API Tests
 
-on: 
-    push:
-        branches: [ main ]
-    pull_request:
-        branches: [ main]
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
 
 jobs:
-    unit-tests:
-        runs-on: ubuntu-latest
+
+  test:
+
+    runs-on: ubuntu-latest
+
+
+    # ==========================================
+    # MySQL Service
+    # ==========================================
+
+    services:
+
+      mysql:
+        image: mysql:8.0
+
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ecommerce_test
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test
+
+        ports:
+          - 3306:3306
+
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+
+    # ==========================================
+    # Environment Variables
+    # ==========================================
+
+    env:
+
+      HOST: localhost
+      PORT: 3050
+
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_USER: test
+      DATABASE_PASSWORD: test
+      DATABASE_NAME: ecommerce_test
+
+      DATABASE_URL: mysql://test:test@127.0.0.1:3306/ecommerce_test
+
+
+    steps:
+
+
+      # ========================================
+      # 1. Checkout
+      # ========================================
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      # ========================================
+      # 2. Node.js
+      # ========================================
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+
+      # ========================================
+      # 3. Dependencies
+      # ========================================
+
+      - name: Install dependencies
+        run: npm ci
+
+
+      # ========================================
+      # 4. Prisma Client
+      # ========================================
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+
+      # ========================================
+      # 5. Database migrations
+      # ========================================
+
+      - name: Deploy Prisma migrations
+        run: npx prisma migrate deploy
+
+
+      # ========================================
+      # 6. Build
+      # ========================================
+
+      - name: Build application
+        run: npm run build
+
+
+      # ========================================
+      # 7. Unit Tests
+      # ========================================
+
+      - name: Run unit tests
+        run: npm test -- --runInBand
+
+
+      # ========================================
+      # 8. Install Playwright
+      # ========================================
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+
+      # ========================================
+      # 9. Start API
+      # ========================================
+
+      - name: Start API server
+        run: |
+          mkdir -p reports
+          npm start > reports/api.log 2>&1 &
+          echo $! > api.pid
+
+
+      # ========================================
+      # 10. Wait for API
+      # ========================================
+
+      - name: Wait for API
+        run: |
+          echo "Waiting for API..."
+
+          for i in {1..30}; do
+            if curl -f http://localhost:3050/; then
+              echo "API is ready"
+              exit 0
+            fi
+
+            echo "Waiting..."
+            sleep 2
+          done
+
+          echo "API did not start"
+          cat reports/api.log
+          exit 1
+
+
+      # ========================================
+      # 11. Playwright E2E
+      # ========================================
+
+      - name: Run Playwright E2E tests
+        run: npx playwright test
+
+
+      # ========================================
+      # 12. Cucumber BDD
+      # ========================================
+
+      - name: Run Cucumber BDD tests
+        run: npm run bdd
+
+
+      # ========================================
+      # 13. Upload Reports
+      # ========================================
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            reports/
+            test-results/
+          retention-days: 7u-latest
