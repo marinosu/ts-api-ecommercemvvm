@@ -5,19 +5,13 @@ dist/
 .env.*
 !.env.example
 
-reports/
-coverage/
-
-/src/generated/prisma
-
 images/
 public/
 
-# Playwright
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-/playwright/.auth/
+reports/
+
+/src/generated/prisma
 
 .DS_Store
+
+.github/workflows/playwright.yml
