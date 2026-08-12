@@ -143,18 +143,28 @@ jobs:
       # para ver la base de datos
       - name: Verify database
         run: |
+          echo "================================"
+          echo "DATABASE VERIFICATION"
+          echo "================================"
+
           echo "=== ROLES ==="
           
           mysql -h 127.0.0.1 -u test -ptest ecommerce_test \
             -e "SELECT id, name, route FROM roles;"
           
-          echo "=== DATABASE COUNTS ==="
+          echo "=== ROLE COUNT ==="
           
           mysql -h 127.0.0.1 -u test -ptest ecommerce_test \
             -e "SELECT COUNT(*) AS roles FROM roles;"
+
+          echo "=== USER COUNT ==="
             
           mysql -h 127.0.0.1 -u test -ptest ecommerce_test \
-            -e "SELECT COUNT(*) AS users FROM users;
+            -e "SELECT COUNT(*) AS users FROM users;"
+          
+          echo "================================"
+          echo "DATABASE READY"
+          echo "================================"
       - name: Build application
         run: npm run build
 
