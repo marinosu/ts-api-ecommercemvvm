@@ -136,7 +136,16 @@ jobs:
 
       - name: Deploy Prisma migrations
         run: npx prisma migrate deploy
-
+      
+      # para ver la base de datos
+      - name: Check database
+        run: |
+          mysql -h 127.0.0.1 -u test -ptest ecommerce_test -e "SHOW TABLES;"
+      
+      # para ver la tabla roles
+      - name: Check roles
+        run: |
+          mysql -h 127.0.0.1 -u test -ptest ecommerce_test -e "SELECT * FROM roles;"
 
       - name: Build application
         run: npm run build
