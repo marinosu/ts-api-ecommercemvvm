@@ -1,0 +1,272 @@
+name: QA Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  # ============================================================
+  # JOB 1 - UNIT TESTS
+  # ============================================================
+
+  unit-tests:
+
+    name: Unit Tests
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+
+      - name: Install dependencies
+        run: npm ci
+
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+
+      - name: Run unit tests with coverage
+        run: >
+          npm test --
+          --coverage
+          --runInBand
+          --coverageThreshold='{
+            "global": {
+              "branches": 70,
+              "functions": 70,
+              "lines": 70,
+              "statements": 70
+            }
+          }'
+
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: coverage/
+          retention-days: 7
+
+
+  # ============================================================
+  # JOB 2 - E2E TESTS
+  # ============================================================
+
+  e2e-tests:
+
+    name: E2E Tests
+
+    runs-on: ubuntu-latest
+
+    needs:
+      - unit-tests
+
+    services:
+
+      mysql:
+        image: mysql:8.0
+
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ecommerce_test
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test
+
+        ports:
+          - 3306:3306
+
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+
+    env:
+
+      HOST: localhost
+      PORT: 3050
+
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_USER: test
+      DATABASE_PASSWORD: test
+      DATABASE_NAME: ecommerce_test
+
+      DATABASE_URL: mysql://test:test@127.0.0.1:3306/ecommerce_test
+
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+
+      - name: Install dependencies
+        run: npm ci
+
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+
+      - name: Deploy Prisma migrations
+        run: npx prisma migrate deploy
+
+      - name: Seed database
+        run: npm run seed
+      
+      # para ver la base de datos
+      - name: Verify database
+        run: |
+          echo "================================"
+          echo "DATABASE VERIFICATION"
+          echo "================================"
+
+          echo "=== ROLES ==="
+          
+          mysql -h 127.0.0.1 -u test -ptest ecommerce_test \
+            -e "SELECT id, name, route FROM roles;"
+          
+          echo "=== ROLE COUNT ==="
+          
+          mysql -h 127.0.0.1 -u test -ptest ecommerce_test \
+            -e "SELECT COUNT(*) AS roles FROM roles;"
+
+          echo "=== USER COUNT ==="
+            
+          mysql -h 127.0.0.1 -u test -ptest ecommerce_test \
+            -e "SELECT COUNT(*) AS users FROM users;"
+          
+          echo "================================"
+          echo "DATABASE READY"
+          echo "================================"
+      - name: Build application
+        run: npm run build
+
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+
+      - name: Start API server
+        run: |
+          mkdir -p reports
+          npm run start > reports/api.log 2>&1 &
+          echo $! > api.pid
+
+
+      - name: Wait for API
+        run: |
+          echo "Waiting for API..."
+
+          for i in {1..30}; do
+
+            if curl -f http://localhost:3050/; then
+              echo "API is ready"
+              exit 0
+            fi
+
+            echo "Waiting..."
+            sleep 2
+
+          done
+
+          echo "API did not start"
+
+          cat reports/api.log
+
+          exit 1
+
+
+      - name: Run Playwright E2E tests
+        run: npx playwright test
+
+
+      - name: Run Cucumber BDD tests
+        run: npm run bdd
+
+
+      - name: Generate Allure report
+        if: always()
+        run: |
+          if [ -d "reports/allure-results" ]; then
+            npx allure generate reports/allure-results \
+              --clean \
+              -o reports/allure-report
+          fi
+
+
+      - name: Upload E2E and Allure reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-reports
+          path: |
+            reports/
+          retention-days: 7
+
+
+      - name: Upload Playwright failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure-screenshots
+          path: |
+            reports/test-results/
+          retention-days: 7
+
+
+  # ============================================================
+  # JOB 3 - SECURITY SCAN
+  # ============================================================
+
+  security-scan:
+
+    name: Security Scan
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+
+      - name: Install dependencies
+        run: npm ci
+
+
+      - name: Run npm security audit
+        run: npm audit --audit-level=high

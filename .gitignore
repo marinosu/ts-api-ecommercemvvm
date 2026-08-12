@@ -1,7 +1,17 @@
 node_modules
+dist/
 # Keep environment variables out of version control
 .env
+.env.*
+!.env.example
+
+images/
+public/
+
+reports/
 
 /src/generated/prisma
 
-images
+.DS_Store
+
+.github/workflows/playwright.yml

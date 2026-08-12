@@ -3,14 +3,14 @@
   "compilerOptions": {
     // File Layout
     // "rootDir": "./src",
-    // "outDir": "./dist",
+    "outDir": "./dist",
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "commonjs",
+    //"moduleResolution": "node",
     "target": "es2023",
-    "types": ["node"],
+    "types": ["node", "jest"],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -37,12 +37,12 @@
     "strict": true,
     // "jsx": "react-jsx",
     // "verbatimModuleSyntax": true,
-    // "isolatedModules": true,
+    "isolatedModules": true,
     // "noUncheckedSideEffectImports": true,
     // "moduleDetection": "force",
     "skipLibCheck": true,
     "esModuleInterop": true
   },
-  "include": ["src/**/*", "prisma.config.ts"],
+  "include": ["src/**/*", "prisma/", "prisma.config.ts", "tests", "playwright.config.ts"],
   "exclude": ["node_modules"]
 }

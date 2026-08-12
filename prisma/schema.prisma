@@ -1,59 +1,51 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "mysql"
 }
 
-/**
-* Crea modelo -> Tabla en la base de datos
-* Los campos con signo ?, es porque el campo no es obligatorio
-*/
+/// *
+/// * Crea modelo -> Tabla en la base de datos
+/// * Los campos con signo ?, es porque el campo no es obligatorio
 model User {
-  id                 Int      @id @default(autoincrement())
+  id                 Int           @id @default(autoincrement())
   name               String
   lastname           String
-  email              String   @unique
+  email              String        @unique
   phone              String
   image              String?
   password           String
   notification_token String?
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
-
-  roles UserHasRole[]
+  created_at         DateTime      @default(now())
+  updated_at         DateTime      @updatedAt
+  roles              UserHasRole[]
 
   @@map("users")
 }
 
 model Role {
-  id         String   @id
-  name       String   @unique @db.VarChar(50)
-  image      String   @db.VarChar(255)
-  route      String   @db.VarChar(255)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  users UserHasRole[]
+  id         String        @id
+  name       String        @unique @db.VarChar(50)
+  image      String        @db.VarChar(255)
+  route      String        @db.VarChar(255)
+  created_at DateTime      @default(now())
+  updated_at DateTime      @updatedAt
+  users      UserHasRole[]
 
   @@map("roles")
 }
 
 model UserHasRole {
   id_user Int
-  id_rol String
-
-  user User @relation(fields: [id_user], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  role Role @relation(fields: [id_rol], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  id_rol  String
+  role    Role   @relation(fields: [id_rol], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [id_user], references: [id], onDelete: Cascade)
 
   @@id([id_user, id_rol])
+  @@index([id_rol], map: "user_has_roles_id_rol_fkey")
   @@map("user_has_roles")
 }
