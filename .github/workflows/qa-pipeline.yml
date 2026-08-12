@@ -143,9 +143,10 @@ jobs:
           mysql -h 127.0.0.1 -u test -ptest ecommerce_test -e "SHOW TABLES;"
       
       # para ver la tabla roles
-      - name: Check roles
+      - name: Check database counts
         run: |
-          mysql -h 127.0.0.1 -u test -ptest ecommerce_test -e "SELECT * FROM roles;"
+          mysql -h 127.0.0.1 -u test -ptest ecommerce_test -e "SELECT COUNT(*) AS roles FROM roles;"
+          mysql -h 127.0.0.1 -u test -ptest ecommerce_test -e "SELECT COUNT(*) AS users FROM users;"
 
       - name: Build application
         run: npm run build
