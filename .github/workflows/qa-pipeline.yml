@@ -149,7 +149,7 @@ jobs:
       - name: Start API server
         run: |
           mkdir -p reports
-          npm start > reports/api.log 2>&1 &
+          npm run start > reports/api.log 2>&1 &
           echo $! > api.pid
 
 
