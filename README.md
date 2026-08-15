@@ -72,3 +72,40 @@ Compila la aplicación TypeScript antes de ejecutar las pruebas E2E en CI/CD.
 ```bash
 npm run build
 ```
+
+## 🤖 IA y Automatización de Pruebas en el Proyecto
+
+En este proyecto se integraron herramientas de Inteligencia Artificial (GitHub Copilot) y pruebas de regresión visual (BackstopJS) para acelerar el desarrollo y garantizar la calidad tanto en la capa de servicios API como en la interfaz de usuario.
+
+---
+
+### 1. Generación de Page Objects y Pruebas E2E (GitHub Copilot)
+
+Se utilizó **GitHub Copilot Chat** para diseñar el patrón **Page Object Model (POM)** en la API de productos y estructurar suites de pruebas E2E automatizadas con Playwright.
+
+#### 📂 Archivos Involucrados
+* **Page Object:** `tests/e2e/api/pages/ProductsApi.ts`
+* **Test E2E Spec:** `tests/e2e/api/specs/products.e2e.spec.ts`
+
+#### 📊 Clasificación de Sugerencias de Copilot
+| Categoría | % | Descripción y Criterio Técnico |
+|---|:---:|---|
+| **Aceptadas** | **35%** | Inyección de `APIRequestContext`, estructura base de la clase y aserciones básicas de autenticación. |
+| **Modificadas** | **55%** | Reemplazo de tipos `any` por DTOs estrictos, normalización condicional del encabezado `Bearer`, generación de datos dinámicos (`Date.now()`) y corrección de códigos de estado HTTP (`201 Created` / `204 No Content`). |
+| **Rechazadas** | **10%** | Métodos para endpoints inexistentes en la API (`/products/search`) e inicializaciones de fixtures dentro de `beforeAll` incompatibles con el runner. |
+
+#### 🔄 Comparativa de Refactorización (Before vs. After)
+
+* **Código Sugerido (Before):** Uso de datos estáticos (`"Laptop Gamer"`), tokens en texto plano y aserciones rígidas de estado `200`.
+* **Código Refactorizado (After):**
+  ```typescript
+  // Flujo CRUD idempotente con tipos estrictos y nombres dinámicos
+  const productPayload = {
+      name: `Producto E2E ${Date.now()}`,
+      description: "Creado vía test E2E automatizado",
+      price: 199.99,
+      stock: 20,
+      category: "TECNOLOGIA"
+  };
+  const createRes = await productsApi.createProduct(adminToken, productPayload);
+  expect(createRes.status()).toBe(201);

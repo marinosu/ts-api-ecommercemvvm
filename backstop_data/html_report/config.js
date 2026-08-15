@@ -1,0 +1,58 @@
+report({
+  "testSuite": "BackstopJS",
+  "tests": [
+    {
+      "pair": {
+        "reference": "../bitmaps_reference/visual_ui_ecommerce_Catlogo_de_Productos_-_visual-ui_0_viewport_0_phone.png",
+        "test": "../bitmaps_test/20260815-040851/visual_ui_ecommerce_Catlogo_de_Productos_-_visual-ui_0_viewport_0_phone.png",
+        "selector": "viewport",
+        "fileName": "visual_ui_ecommerce_Catlogo_de_Productos_-_visual-ui_0_viewport_0_phone.png",
+        "label": "Catálogo de Productos - visual-ui",
+        "requireSameDimensions": true,
+        "misMatchThreshold": 0.1,
+        "url": "http://localhost:8080/visual-ui/index.html",
+        "expect": 0,
+        "viewportLabel": "phone",
+        "diff": {
+          "isSameDimensions": true,
+          "dimensionDifference": {
+            "width": 0,
+            "height": 0
+          },
+          "rawMisMatchPercentage": 25.712239583333336,
+          "misMatchPercentage": "25.71",
+          "analysisTime": 4
+        },
+        "diffImage": "../bitmaps_test/20260815-040851/failed_diff_visual_ui_ecommerce_Catlogo_de_Productos_-_visual-ui_0_viewport_0_phone.png"
+      },
+      "status": "fail"
+    },
+    {
+      "pair": {
+        "reference": "../bitmaps_reference/visual_ui_ecommerce_Catlogo_de_Productos_-_visual-ui_0_viewport_1_desktop.png",
+        "test": "../bitmaps_test/20260815-040851/visual_ui_ecommerce_Catlogo_de_Productos_-_visual-ui_0_viewport_1_desktop.png",
+        "selector": "viewport",
+        "fileName": "visual_ui_ecommerce_Catlogo_de_Productos_-_visual-ui_0_viewport_1_desktop.png",
+        "label": "Catálogo de Productos - visual-ui",
+        "requireSameDimensions": true,
+        "misMatchThreshold": 0.1,
+        "url": "http://localhost:8080/visual-ui/index.html",
+        "expect": 0,
+        "viewportLabel": "desktop",
+        "diff": {
+          "isSameDimensions": true,
+          "dimensionDifference": {
+            "width": 0,
+            "height": 0
+          },
+          "rawMisMatchPercentage": 27.8154296875,
+          "misMatchPercentage": "27.82",
+          "analysisTime": 13
+        },
+        "diffImage": "../bitmaps_test/20260815-040851/failed_diff_visual_ui_ecommerce_Catlogo_de_Productos_-_visual-ui_0_viewport_1_desktop.png"
+      },
+      "status": "fail"
+    }
+  ],
+  "id": "visual_ui_ecommerce"
+});

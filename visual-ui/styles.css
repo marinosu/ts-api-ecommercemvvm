@@ -1,0 +1,161 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    color: #222;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 18px 50px;
+
+    background: #1f2937;
+    color: white;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.user {
+    font-size: 14px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 50px 30px;
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.hero h1 {
+    margin-bottom: 10px;
+    font-size: 36px;
+}
+
+.hero p {
+    color: #666;
+}
+
+.products {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+}
+
+.product-card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+
+    transition: transform 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-3px);
+}
+
+/*.product-image {
+    height: 180px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #e5e7eb;
+
+    font-size: 70px;
+}*/
+
+/* Modificación temporal en visual-ui/styles.css */
+.product-image {
+    height: 200px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+
+    font-size: 75px;
+}
+/**----------------*/
+
+.product-content {
+    padding: 22px;
+}
+
+.product-content h2 {
+    margin-top: 0;
+}
+
+.description {
+    color: #666;
+    line-height: 1.5;
+}
+
+.product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-top: 25px;
+}
+
+.price {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+button {
+    border: none;
+
+    padding: 10px 18px;
+
+    border-radius: 6px;
+
+    background: #2563eb;
+    color: white;
+
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+.footer {
+    text-align: center;
+
+    padding: 25px;
+
+    background: #1f2937;
+    color: white;
+
+    margin-top: 40px;
+}
+
+@media (max-width: 800px) {
+
+    .products {
+        grid-template-columns: 1fr;
+    }
+
+    .header {
+        padding: 18px 25px;
+    }
+}
